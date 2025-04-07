@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "811817316375",
+    "project_id": "walwalmeaw-2cb2b",
+    "storage_bucket": "walwalmeaw-2cb2b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:811817316375:android:8cfae2886621fcd3826c52",
+        "android_client_info": {
+          "package_name": "com.example.login"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCrfw8oaN5lI0UWvdJKNDV0GN68Z6OdJEM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
