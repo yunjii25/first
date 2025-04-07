@@ -1,36 +1,26 @@
 {
   "project_info": {
-    "project_number": "568966893582",
-    "project_id": "fir-emailaccount-7b951",
-    "storage_bucket": "fir-emailaccount-7b951.appspot.com"
+    "project_number": "811817316375",
+    "project_id": "walwalmeaw-2cb2b",
+    "storage_bucket": "walwalmeaw-2cb2b.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:568966893582:android:eba908890a4bf3cc456c5f",
+        "mobilesdk_app_id": "1:811817316375:android:8cfae2886621fcd3826c52",
         "android_client_info": {
           "package_name": "com.example.login"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "568966893582-mtumjb2m02benbvvsp261uo4bdq6cesp.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAHV9bk7wE-XZYweTe0TewNdm1DPJ0WyA8"
+          "current_key": "AIzaSyCrfw8oaN5lI0UWvdJKNDV0GN68Z6OdJEM"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "568966893582-mtumjb2m02benbvvsp261uo4bdq6cesp.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }

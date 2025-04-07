@@ -25,7 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="83dp"
-        android:text="성신여자대학교"
+        android:text="왈왈케어"
         android:textColor="@color/mainPurple"
         android:textSize="13dp"
         app:layout_constraintLeft_toRightOf="@id/profile_image"

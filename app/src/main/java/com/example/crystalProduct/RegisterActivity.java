@@ -18,113 +18,43 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
-
-import org.jetbrains.annotations.NotNull;
-
-import java.util.Iterator;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 public class RegisterActivity extends AppCompatActivity {
 
-    private FirebaseAuth FirebaseAuth;     //firebase인증
-    private DatabaseReference DataBaseRef; //실시간데이터베이스
-    private EditText EtEmail,EtPwd,NickName, EtPwd2;       //회원가입 입력필드
-    private Button nBtnRegister;            //회원가입 버튼
+    private FirebaseAuth FirebaseAuth;
+    private FirebaseFirestore firestore;
+    private EditText EtEmail, EtPwd, NickName, EtPwd2;
+    private Button nBtnRegister;
     private TextView registerText2;
 
-    //회원가입 처리 시작
-    private String strEmail;
-    private String strPwd;
-    private String strPwd2;
-    private String strName;
-
-    private ValueEventListener checkRegister = new ValueEventListener() {
-        @Override
-        public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-
-            if (snapshot.getChildren() != null){
-                if (NickName.getText().toString().length() > 7){
-                    Toast.makeText(getApplicationContext(), "닉네임은 7자리까지 가능합니다.", Toast.LENGTH_LONG).show();
-                    return;
-                }
-
-                Iterator<DataSnapshot> child = snapshot.getChildren().iterator();  //userAccount의 모든 자식들의 key값과 value 값들을 iterator
-                long idSize = snapshot.getChildrenCount();    //userAccount에 있는 id 개수
-                for (long i = 0; i < idSize ; i++) {
-                    //닉네임 중복 검사
-                    if (child.next().child("nickname").getValue().equals(NickName.getText().toString())) {
-                        Toast.makeText(getApplicationContext(), "이미 등록된 닉네임입니다.", Toast.LENGTH_LONG).show();
-                        DataBaseRef.removeEventListener(this);
-                        return;
-                    }
-                }
-            }
-
-            //닉네임이 중복이 아닐 경우 : 데이터베이스 추가
-            FirebaseAuth.createUserWithEmailAndPassword(strEmail, strPwd).addOnCompleteListener(RegisterActivity.this, new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    if (task.isSuccessful()) {
-                        FirebaseUser firebaseUser=FirebaseAuth.getCurrentUser();
-                        UserAccount account=new UserAccount();
-                        String uid=firebaseUser.getUid();
-                        account.setIdToken(uid);
-                        account.setEmailId(firebaseUser.getEmail());
-                        account.setPassword(strPwd);
-                        account.setNickname(strName);
-
-                        //setValue : database에 insert(삽입) 행위
-                        DataBaseRef.child("UserAccount").child(firebaseUser.getUid()).setValue(account);
-
-                        Toast.makeText(RegisterActivity.this, "회원가입에 성공하셨습니다.", Toast.LENGTH_SHORT).show();
-                        //회원가입 완료후, edit_text 초기화하기
-                        EtEmail.setText("");
-                        EtPwd.setText("");
-                        EtPwd2.setText("");
-                        NickName.setText("");
-
-                        sendVerificationEmail();    //이메일 인증 보내기 함수
-
-                    } else {
-                        Toast.makeText(RegisterActivity.this, "이미 등록된 이메일입니다.", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        }
-
-        @Override
-        public void onCancelled(@NonNull @NotNull DatabaseError error) {
-
-        }
-    };
+    private String strEmail, strPwd, strPwd2, strName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        FirebaseAuth=FirebaseAuth.getInstance();
-        DataBaseRef= FirebaseDatabase.getInstance().getReference("login");
+        FirebaseAuth = FirebaseAuth.getInstance();
+        firestore = FirebaseFirestore.getInstance(); // Firestore 초기화
 
-        EtEmail=findViewById(R.id.et_email);
-        EtPwd=findViewById(R.id.et_pwd);
-        EtPwd2=findViewById(R.id.et_pwd2);
-        NickName=findViewById(R.id.et_nickname);
-
-        EtEmail.bringToFront();
-        EtPwd.bringToFront();
-        EtPwd2.bringToFront();
-        NickName.bringToFront();
-
+        // EditText 및 버튼 연결
+        EtEmail = findViewById(R.id.et_email);
+        EtPwd = findViewById(R.id.et_pwd);
+        EtPwd2 = findViewById(R.id.et_pwd2);
+        NickName = findViewById(R.id.et_nickname);
         registerText2 = findViewById(R.id.registerText2);
+        nBtnRegister = findViewById(R.id.btn_register);
 
-        registerText2.bringToFront();
+        // 🔥 bringToFront() 삭제 → 뷰를 가리는 문제 해결
+        // EtEmail.bringToFront();
+        // EtPwd.bringToFront();
+        // EtPwd2.bringToFront();
+        // NickName.bringToFront();
+        // registerText2.bringToFront();
 
-        nBtnRegister=findViewById(R.id.btn_register);
+        // 🔹 회원가입 버튼 클릭 이벤트
         nBtnRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -135,44 +65,109 @@ public class RegisterActivity extends AppCompatActivity {
 
                 if (TextUtils.isEmpty(strEmail) || TextUtils.isEmpty(strPwd) || TextUtils.isEmpty(strName)) {
                     Toast.makeText(RegisterActivity.this, "모두 입력하십시오.", Toast.LENGTH_SHORT).show();
-                } else if (!strEmail.contains("sungshin.ac.kr")){
-                    Toast.makeText(RegisterActivity.this, "성신여자대학교 이메일로 가입하세요.",Toast.LENGTH_SHORT).show();
-                } else if (strPwd.length() <6){
-                    Toast.makeText(RegisterActivity.this,"비밀번호는 6자리 이상입니다.",Toast.LENGTH_SHORT).show();
-                } else if (!strPwd.equals(strPwd2)){
+                } else if (strPwd.length() < 6) {
+                    Toast.makeText(RegisterActivity.this, "비밀번호는 6자리 이상입니다.", Toast.LENGTH_SHORT).show();
+                } else if (!strPwd.equals(strPwd2)) {
                     Toast.makeText(RegisterActivity.this, "비밀번호가 일치하지 않습니다.", Toast.LENGTH_SHORT).show();
-                } else if (strName.length() > 0) {
-                    DataBaseRef.child("UserAccount").addListenerForSingleValueEvent(checkRegister);   //닉네임 중복 검사
+                } else {
+                    checkDuplicateNickname();
                 }
             }
         });
 
-        //회원가입 끝낸 후, login버튼
-        Button login_go=findViewById(R.id.login_go);
+        // 🔹 로그인 버튼 클릭 이벤트
+        Button login_go = findViewById(R.id.login_go);
         login_go.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //회원가입 화면으로 이동.
-                Intent intent=new Intent(RegisterActivity.this, LoginActivity.class);
+                Intent intent = new Intent(RegisterActivity.this, LoginActivity.class);
                 startActivity(intent);
             }
         });
     }
 
-    //인증메일 보내는 함수
-    private void sendVerificationEmail() {
-        final FirebaseUser user = FirebaseAuth.getCurrentUser();
-        user.sendEmailVerification().addOnCompleteListener(this, new OnCompleteListener() {
-            @Override
-            public void onComplete(@NonNull Task task) {
+    private void checkDuplicateNickname() {
+        firestore.collection("UserAccount")
+                .whereEqualTo("nickname", strName)
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        QuerySnapshot querySnapshot = task.getResult();
+                        if (querySnapshot != null && !querySnapshot.isEmpty()) {
+                            Toast.makeText(getApplicationContext(), "이미 등록된 닉네임입니다.", Toast.LENGTH_LONG).show();
+                        } else {
+                            registerNewUser();
+                        }
+                    } else {
+                        System.out.println("❌ 닉네임 중복 체크 실패: " + task.getException());
+                    }
+                });
+    }
 
-                if (task.isSuccessful()) {
-                    Toast.makeText(RegisterActivity.this, "인증메일이 전송되었습니다.", Toast.LENGTH_LONG).show();
-                }
-                else {
-                    Toast.makeText(RegisterActivity.this, "인증메일 전송에 실패했습니다.", Toast.LENGTH_LONG).show();
-                }
-            }
-        });
+    private void registerNewUser() {
+        FirebaseAuth.createUserWithEmailAndPassword(strEmail, strPwd)
+                .addOnCompleteListener(RegisterActivity.this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            FirebaseUser firebaseUser = FirebaseAuth.getCurrentUser();
+                            if (firebaseUser != null) {
+                                UserAccount account = new UserAccount();
+                                account.setIdToken(firebaseUser.getUid());
+                                account.setEmailId(firebaseUser.getEmail());
+                                account.setPassword(strPwd);
+                                account.setNickname(strName);
+
+                                firestore.collection("UserAccount").document(firebaseUser.getUid())
+                                        .set(account)
+                                        .addOnSuccessListener(aVoid -> {
+                                            Toast.makeText(RegisterActivity.this, "회원가입에 성공하셨습니다.", Toast.LENGTH_SHORT).show();
+
+                                            // 🔥 EditText가 보이도록 강제로 VISIBLE 설정 후 초기화
+                                            EtEmail.setVisibility(View.VISIBLE);
+                                            EtPwd.setVisibility(View.VISIBLE);
+                                            EtPwd2.setVisibility(View.VISIBLE);
+                                            NickName.setVisibility(View.VISIBLE);
+
+                                            EtEmail.setText("");
+                                            EtPwd.setText("");
+                                            EtPwd2.setText("");
+                                            NickName.setText("");
+
+                                            sendVerificationEmail(firebaseUser);
+                                        })
+                                        .addOnFailureListener(e -> {
+                                            System.out.println("❌ Firestore 저장 실패: " + e.getMessage());
+                                        });
+
+                            } else {
+                                System.out.println("❌ FirebaseUser가 null입니다.");
+                            }
+                        } else {
+                            System.out.println("❌ 회원가입 실패!");
+                            Toast.makeText(RegisterActivity.this, "이미 등록된 이메일입니다.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
+    private void sendVerificationEmail(FirebaseUser user) {
+        if (user != null) {
+            user.sendEmailVerification()
+                    .addOnCompleteListener(this, new OnCompleteListener<Void>() {
+                        @Override
+                        public void onComplete(@NonNull Task<Void> task) {
+                            if (task.isSuccessful()) {
+                                System.out.println("✅ 인증 메일 전송 완료");
+                                Toast.makeText(RegisterActivity.this, "인증메일이 전송되었습니다.", Toast.LENGTH_LONG).show();
+                            } else {
+                                System.out.println("❌ 인증 메일 전송 실패: " + task.getException());
+                                Toast.makeText(RegisterActivity.this, "인증메일 전송에 실패했습니다.", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
+        } else {
+            System.out.println("❌ FirebaseUser가 null입니다.");
+        }
     }
 }
