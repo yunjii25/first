@@ -23,6 +23,9 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -111,28 +114,26 @@ public class Frag2 extends Fragment implements TextWatcher {
 
     private void readTitles() {
 
-        DatabaseReference reference = FirebaseDatabase.getInstance().getReference("Post");
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        CollectionReference postRef = db.collection("Post");
 
-        reference.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+        postRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
                 if (search_bar.getText().toString().equals("")) {
                     imageDTOList.clear();
                     uidList.clear();
-                    for (DataSnapshot snapshot : dataSnapshot.getChildren()){
-                        ImageDTO imageDTO = snapshot.getValue(ImageDTO.class);
-                        String uidKey=snapshot.getKey();
-                        imageDTOList.add(0,imageDTO); //imageDTOList.add(0, imageDTO);
-                        uidList.add(0,uidKey);
+                    for (QueryDocumentSnapshot document : task.getResult()) {
+                        ImageDTO imageDTO = document.toObject(ImageDTO.class);
+                        String uidKey = document.getId();
+                        imageDTOList.add(0, imageDTO);
+                        uidList.add(0, uidKey);
                     }
                     uploadedImageAdapter.notifyDataSetChanged();
                 }
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
+            } else {
+                // 에러 처리
             }
         });
     }
+
 }
