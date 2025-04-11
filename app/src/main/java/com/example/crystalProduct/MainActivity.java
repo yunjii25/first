@@ -1,6 +1,7 @@
 package com.example.crystalProduct;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -17,16 +18,19 @@ import com.example.crystalProduct.Fragment.Frag3;
 import com.example.crystalProduct.Fragment.Frag4;
 import com.example.crystalProduct.Fragment.Frag5;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.appcheck.FirebaseAppCheck;
+import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.annotations.NotNull;
 
 public class MainActivity extends AppCompatActivity {
 
-    //뒤로가기
-    private final long FINISH_INTERVAL_TIME = 2000;  //이 시간내에 연속적으로 뒤로가기 버튼을 누를 경우 종료
-    private long backPressedTime = 0;  //뒤로가기가 일어난 시간
+    // 뒤로가기 관련
+    private final long FINISH_INTERVAL_TIME = 2000;
+    private long backPressedTime = 0;
 
-    private BottomNavigationView bnv; //하단바
+    private BottomNavigationView bnv;
     private FragmentManager fm;
     private FragmentTransaction ft;
     private Frag1 f1;
@@ -44,9 +48,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         auth = FirebaseAuth.getInstance();
 
-        //툴바
+        // ✅ Firebase App 초기화 및 AppCheck 디버그 모드 활성화
+        FirebaseApp.initializeApp(this);
+
+        FirebaseAppCheck firebaseAppCheck = FirebaseAppCheck.getInstance();
+        firebaseAppCheck.installAppCheckProviderFactory(
+                DebugAppCheckProviderFactory.getInstance()
+        );
+
+        // 여기에 Log 출력 추가
+        Log.d("AppCheck", "AppCheck Debug 모드 초기화 완료");
+
+        // 툴바
         Toolbar toolbar = findViewById(R.id.toolbar);
 
+        // 하단 네비게이션 설정
         bnv = findViewById(R.id.bottomNavi);
         bnv.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -68,23 +84,23 @@ public class MainActivity extends AppCompatActivity {
                         setFrag(4);
                         break;
                 }
-
                 return true;
             }
         });
+
+        // 프래그먼트 초기화
         f1 = new Frag1();
         f2 = new Frag2();
         f3 = new Frag3();
         f4 = new Frag4();
         f5 = new Frag5();
 
-        setFrag(0); // 첫 프래그먼트 화면을 무엇으로 지정해줄 것인지 선택
-
+        setFrag(0); // 첫 화면
     }
 
     private void setFrag(int n) {
         fm = getSupportFragmentManager();
-        ft = fm.beginTransaction(); //실제 교체 시 ..
+        ft = fm.beginTransaction();
         switch (n) {
             case 0:
                 ft.replace(R.id.Main_Frame, f1);
@@ -109,7 +125,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //수정
     @Override
     public void onBackPressed() {
         long tempTime = System.currentTimeMillis();
