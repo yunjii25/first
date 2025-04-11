@@ -227,14 +227,23 @@ public class Frag4 extends Fragment implements IOnBackPressed {
         firestore.collection("Post")
                 .add(imageDTO)
                 .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(context, "업로드 완료!", Toast.LENGTH_SHORT).show();
-                    resetForm();
-                    startActivity(new Intent(getActivity(), MainActivity.class));
+                    // ✅ 여기서 자동 생성된 document ID를 가져와서 postid로 저장
+                    String postId = documentReference.getId();
+                    documentReference.update("postid", postId)
+                            .addOnSuccessListener(unused -> {
+                                Toast.makeText(context, "업로드 완료!", Toast.LENGTH_SHORT).show();
+                                resetForm();
+                                startActivity(new Intent(getActivity(), MainActivity.class));
+                            })
+                            .addOnFailureListener(e -> {
+                                Toast.makeText(context, "postid 저장 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            });
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(context, "업로드 실패: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
+
 
     private void resetForm() {
         etTitle.setText("");
