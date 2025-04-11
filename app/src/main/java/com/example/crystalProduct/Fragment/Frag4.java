@@ -251,7 +251,7 @@ public class Frag4 extends Fragment implements IOnBackPressed {
         etPrice.setText("");
         etPurchaseLink.setText("");
         dateTv.setText("");
-        ivProfile.setImageResource(R.drawable.base_image_frag4);
+        ivProfile.setImageResource(R.drawable.orange);
         imageUrl = "";
         date = "";
     }

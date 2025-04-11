@@ -58,7 +58,7 @@ public class CalendarAdapter extends RecyclerView.Adapter {
         context = holder.itemView.getContext();
         String url = imageDTOList.get(position).getImageUrl();
 
-        Glide.with(context).load(url).placeholder(R.drawable.base_image_frag4)   // 로딩전 잠깐 보여주는 이미지.
+        Glide.with(context).load(url).placeholder(R.drawable.orange)   // 로딩전 잠깐 보여주는 이미지.
                 .into(((CalendarAdapter.ViewHolder) holder).imageView);
 
     }
